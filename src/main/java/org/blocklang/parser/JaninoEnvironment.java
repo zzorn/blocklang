@@ -1,4 +1,7 @@
-package org.blocklang;
+package org.blocklang.parser;
+
+import org.blocklang.parser.Compilation;
+import org.blocklang.parser.LanguageParser;
 
 /**
  *

@@ -1,5 +1,7 @@
 package org.blocklang;
 
+import org.blocklang.parser.Compilation;
+
 import java.io.File;
 import java.util.Collection;
 

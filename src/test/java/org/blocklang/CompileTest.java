@@ -1,5 +1,7 @@
 package org.blocklang;
 
+import org.blocklang.parser.Compilation;
+import org.blocklang.parser.JaninoEnvironment;
 import org.junit.Before;
 import org.junit.Test;
 

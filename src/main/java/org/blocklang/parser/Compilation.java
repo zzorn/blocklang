@@ -1,4 +1,4 @@
-package org.blocklang;
+package org.blocklang.parser;
 
 /**
  * A set of compiled classes.

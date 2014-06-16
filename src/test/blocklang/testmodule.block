@@ -1,10 +1,60 @@
 
+// Note: Some of the syntax and features inspired by Kotlin or Scala.  Function interfaces new contribution AFAIK.
 
-module TestModule {
+package testing.things
+
+import blocklang.math.*
+
+fun double square(double n) = n * n
+
+const Magic = 5
+
+funface int Fooing(optional int foo)
+funface Bar Baring(int bar)
+
+fun fooFun(int foo = 0) extends Fooing = foo*3
+
+// Possible to remap parameters of like type - default remapping could be done as well maybe? Or not, too easy to mess up (x,y) and (y,x) types of situations.
+interface Bar(int barbar) extends Baring(barbar=bar) {
+
+    prop int hitpoints
+    readonly String name
+    writeonly Fooing foozle
+
+    fun int damage(opt int amount)
+
+    fun int bipbob(int foo) extends Fooing
+
+}
+
+class TestModule(var int foobar = 1, int barbar = 4) extends Bar {
+
+    {
+      // Constructor initialization area (similar to kotlin
+      name = "abcd"
+    }
+
+    TestModule(String name) {
+
+    }
+
+    // Maybe infer type later.
+    val name : String = "foobar"
+
+    var hitpoints : Int = foobar * 100 // Initial value
+        // Default getter
+        // Custom setter:
+        set(v) {
+            // Access backing field in similar way to kotlin
+            $hitpoints = if (v >= 0) v else 0
+        }
 
 
+    prop Fooing foozle
 
+    fun int damage(opt int amount)
 
+    fun int bipbob(int foo) extends Fooing
 
 
 

@@ -1,4 +1,11 @@
-package org.blocklang;
+package org.blocklang.parser;
+
+import org.blocklang.Environment;
+import org.blocklang.Function;
+import org.blocklang.Module;
+import org.blocklang.Type;
+import org.blocklang.parser.BlockLangParser;
+import org.blocklang.parser.LanguageParser;
 
 import java.io.File;
 import java.util.Collection;
