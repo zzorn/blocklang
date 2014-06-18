@@ -2,7 +2,6 @@ package org.blocklang.parser;
 
 import org.blocklang.Environment;
 import org.blocklang.Function;
-import org.blocklang.Module;
 import org.blocklang.Type;
 import org.blocklang.parser.BlockLangParser;
 import org.blocklang.parser.LanguageParser;
@@ -57,11 +56,6 @@ public abstract class EnvironmentBase implements Environment {
     }
 
     @Override
-    public void addModule(final Module module) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void addModule(final String source) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -83,11 +77,6 @@ public abstract class EnvironmentBase implements Environment {
 
     @Override
     public Collection<Function> getFunctions() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Collection<Module> getModules() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

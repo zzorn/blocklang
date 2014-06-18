@@ -1,37 +1,73 @@
 package org.blocklang.nodes;
 
+import org.blocklang.compiler.CompiledBlock;
+import org.blocklang.compiler.SourceBuilder;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
+import org.flowutils.collections.props.Props;
+import org.flowutils.collections.props.PropsBase;
+import org.flowutils.collections.props.ReadableProps;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Common functionality for nodes.
  */
 public abstract class NodeBase implements Node {
 
-    private List<Input> inputs;
-    private List<Output> outputs;
+    private Map<Symbol, Input> inputs;
+    private Map<Symbol, Output> outputs;
+    private Output defaultOutput;
     private final Set<NodeListener> listeners = new LinkedHashSet<NodeListener>(3);
 
-    @Override public final List<Input> getInputs() {
-        if (inputs == null) inputs = new ArrayList<Input>();
+    private CompiledBlock compiledBlock;
 
-        return inputs;
+    private final Props parameterDelegate = new PropsBase() {
+        @Override public <T> T get(Symbol id) {
+            return inputs.get(id).get();
+        }
+
+        @Override public boolean has(Symbol id) {
+            return inputs.containsKey(id);
+        }
+
+        @Override public Map<Symbol, Object> getAll(Map<Symbol, Object> out) {
+            if (out == null) out = new LinkedHashMap<Symbol, Object>();
+
+            for (Map.Entry<Symbol, Input> entry : inputs.entrySet()) {
+                out.put(entry.getKey(), entry.getValue().get());
+            }
+
+            return out;
+        }
+
+        @Override public Object set(Symbol id, Object value) {
+            final Output output = outputs.get(id);
+            final Object oldValue = output.get();
+            output.set(value);
+            return oldValue;
+        }
+
+        @Override public <T> T remove(Symbol id) {
+            throw new IllegalStateException("Can not remove any parameter!");
+        }
+
+        @Override public void removeAll() {
+            throw new IllegalStateException("Can not remove any parameter!");
+        }
+    };
+
+    @Override public final Map<Symbol, Input> getInputs() {
+        return Collections.unmodifiableMap(getMutableInputs());
     }
 
-    @Override public final List<Output> getOutputs() {
-        if (outputs == null) outputs = new ArrayList<Output>();
-
-        return outputs;
+    @Override public final Map<Symbol, Output> getOutputs() {
+        return Collections.unmodifiableMap(getMutableOutputs());
     }
 
     @Override public final Output getDefaultOutput() {
         if (outputs == null || outputs.isEmpty()) return null;
-        else return outputs.get(0);
+        else return defaultOutput;
     }
 
     @Override public final void addListener(NodeListener listener) {
@@ -42,6 +78,27 @@ public abstract class NodeBase implements Node {
 
     @Override public final void removeListener(NodeListener listener) {
         listeners.remove(listener);
+    }
+
+    @Override public final void calculateOutputs(ReadableProps context) {
+        if (compiledBlock == null) {
+            compiledBlock = compileCode();
+        }
+
+        compiledBlock.calculate(parameterDelegate, parameterDelegate, null);
+    }
+
+    /*
+    @Override public void generateCode(SourceBuilder sourceBuilder) {
+
+        // TODO: Implement
+    }
+    */
+
+    protected final CompiledBlock compileCode() {
+
+        // TODO: Implement
+        return null;
     }
 
     /**
@@ -95,12 +152,7 @@ public abstract class NodeBase implements Node {
      * @return the created and registered input parameter.
      */
     protected final Input input(String name, ParamType type, String description, Object defaultValue) {
-
-        final Input input = new Input(Symbol.get(name), type, description, defaultValue);
-
-        getInputs().add(input);
-
-        return input;
+        return addInput(new Input(Symbol.get(name), type, description, defaultValue));
     }
 
     /**
@@ -112,12 +164,17 @@ public abstract class NodeBase implements Node {
      * @return the created and registered input parameter.
      */
     protected final Input input(String name, String description, double defaultValue) {
+        return addInput(new Input(Symbol.get(name), NumType.INSTANCE, description, defaultValue));
+    }
 
-        final Input input = new Input(Symbol.get(name), NumType.INSTANCE, description, defaultValue);
-
-        getInputs().add(input);
-
+    private Input addInput(Input input) {
+        getMutableInputs().put(input.getIdentifier(), input);
         return input;
+    }
+
+    private Map<Symbol, Input> getMutableInputs() {
+        if (inputs == null) inputs = new LinkedHashMap<Symbol, Input>();
+        return inputs;
     }
 
     /**
@@ -148,12 +205,7 @@ public abstract class NodeBase implements Node {
      * @return the created and registered output parameter.
      */
     protected final Output output(String name, String description) {
-
-        final Output output = new Output(Symbol.get(name), NumType.INSTANCE, description);
-
-        getOutputs().add(output);
-
-        return output;
+        return addOutput(new Output(Symbol.get(name), NumType.INSTANCE, description));
     }
 
     /**
@@ -164,14 +216,23 @@ public abstract class NodeBase implements Node {
      * @return the created and registered output parameter.
      */
     protected final Output output(String name, ParamType type, String description) {
+        return addOutput(new Output(Symbol.get(name), type, description));
+    }
 
-        final Output output = new Output(Symbol.get(name), type, description);
 
-        getOutputs().add(output);
+    private Output addOutput(Output output) {
+        getMutableOutputs().put(output.getIdentifier(), output);
+
+        // Initialize defaultOutput if this is the first output
+        if (defaultOutput == null) defaultOutput = output;
 
         return output;
     }
 
+    private Map<Symbol, Output> getMutableOutputs() {
+        if (outputs == null) outputs = new LinkedHashMap<Symbol, Output>();
+        return outputs;
+    }
 
     /**
      * Calls all registered node listeners and notifies them that this node has changed.
@@ -181,5 +242,6 @@ public abstract class NodeBase implements Node {
             listener.onNodeChanged(this);
         }
     }
+
 
 }

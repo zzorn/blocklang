@@ -44,12 +44,6 @@ public interface Environment {
     void addFunction(String source);
 
     /**
-     * Add a module to be compiled.
-     * @param module
-     */
-    void addModule(Module module);
-
-    /**
      * Parses the given source to a module, and adds it.
      * @param source source code.
      */
@@ -72,11 +66,6 @@ public interface Environment {
      * @return static functions available to modules.
      */
     Collection<Function> getFunctions();
-
-    /**
-     * @return modules available in the environment.
-     */
-    Collection<Module> getModules();
 
     /**
      * Compiles all modules in the environment.

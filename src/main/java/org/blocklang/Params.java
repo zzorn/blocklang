@@ -3,5 +3,5 @@ package org.blocklang;
 /**
  *
  */
-public interface Module {
+public class Params {
 }

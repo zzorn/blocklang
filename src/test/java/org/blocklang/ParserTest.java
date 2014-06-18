@@ -11,9 +11,7 @@ public class ParserTest {
 
         BlockLangParser parser = new BlockLangParser();
 
-        parser.parseModule("" +
-                           "" +
-                           "");
+        // TODO
 
     }
 

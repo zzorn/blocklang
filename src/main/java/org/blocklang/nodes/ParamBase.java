@@ -11,10 +11,8 @@ public abstract class ParamBase implements Param {
     private final Symbol identifier;
     private final String description;
     private final ParamType type;
-    private final boolean isNumerical;
 
-    private Object objValue;
-    private double numValue;
+    private Object value;
     private Param source;
 
 
@@ -29,7 +27,6 @@ public abstract class ParamBase implements Param {
         this.identifier = identifier;
         this.type = type;
         this.description = description;
-        this.isNumerical = type.isNumerical();
     }
 
     public final Symbol getIdentifier() {
@@ -45,28 +42,15 @@ public abstract class ParamBase implements Param {
     }
 
 
-    @Override public final <T> T getObj() {
-        if (source != null) return source.getObj();
-        else return (T) objValue;
+    @Override public final <T> T get() {
+        if (source != null) return source.get();
+        else return (T) value;
     }
 
-    @Override public final double getNum() {
-        if (source != null) return source.getNum();
-        else return numValue;
-    }
+    public final void set(Object value) {
+        if (!type.isInstance(value)) throw new IllegalArgumentException("The value '" + value + "' is not an instance of " + type + ", can not assign it to the parameter " + identifier);
 
-    public final void set(Object objValue) {
-        if (isNumerical) throw new IllegalArgumentException("The type of the parameter '"+identifier+"' is numerical, can not set it to " + objValue);
-        if (!type.isInstance(objValue)) throw new IllegalArgumentException("The value " + objValue + " is not an instance of " + type + ", can not assign it to the parameter " + identifier);
-
-        this.objValue = objValue;
-        source = null;
-    }
-
-    public final void set(double numValue) {
-        if (!isNumerical) throw new IllegalArgumentException("The type of the parameter is not numerical, but " + type);
-
-        this.numValue = numValue;
+        this.value = value;
         source = null;
     }
 

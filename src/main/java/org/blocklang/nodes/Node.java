@@ -1,16 +1,22 @@
 package org.blocklang.nodes;
 
 
+import org.blocklang.compiler.SourceBuilder;
+import org.flowutils.Symbol;
+import org.flowutils.collections.props.ReadableProps;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  */
+// TODO: Rename to block?
 public interface Node {
 
-    List<Input> getInputs();
+    Map<Symbol, Input> getInputs();
 
-    List<Output> getOutputs();
+    Map<Symbol, Output> getOutputs();
 
     Output getDefaultOutput();
 
@@ -19,7 +25,13 @@ public interface Node {
      *
      * @param context context with current context variables (e.g. time, coordinates, etc).
      */
-    void calculateOutputs(Context context);
+    // Compiles a program for this node if not already compiled, then executes it
+    void calculateOutputs(ReadableProps context);
+
+    /**
+     * Generates code that does the calculations of this node, can be embedded in a program using this node, or compiled stand alone by this node.
+     */
+    void generateCode(SourceBuilder sourceBuilder);
 
     void addListener(NodeListener listener);
 

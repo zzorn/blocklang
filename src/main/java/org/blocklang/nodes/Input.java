@@ -7,32 +7,17 @@ import org.flowutils.Symbol;
  */
 public final class Input extends ParamBase {
 
-    private final Object defaultValueObj;
-    private final double defaultValueNum;
+    private final Object defaultValue;
 
-    protected Input(Symbol identifier, ParamType type, String description, Object defaultValueObj) {
+    protected Input(Symbol identifier, ParamType type, String description, Object defaultValue) {
         super(identifier, type, description);
-        this.defaultValueObj = defaultValueObj;
-        this.defaultValueNum = Double.NaN;
-        set(defaultValueObj);
+        this.defaultValue = defaultValue;
+        set(defaultValue);
     }
 
-    protected Input(Symbol identifier, ParamType type, String description, double defaultValueNum) {
-        super(identifier, type, description);
-        this.defaultValueNum = defaultValueNum;
-        this.defaultValueObj = null;
-        set(defaultValueNum);
-    }
-
-    public <T> T getDefaultValueObj() {
-        return (T) defaultValueObj;
-    }
-
-    public double getDefaultValueNum() {
-        return defaultValueNum;
-    }
 
     public final void set(Output source) {
         setSource(source);
     }
+
 }

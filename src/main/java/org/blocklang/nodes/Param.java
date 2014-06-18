@@ -25,10 +25,6 @@ public interface Param {
     /**
      * @return current value of the parameter, if it is of an object type.
      */
-    <T> T getObj();
+    <T> T get();
 
-    /**
-     * @return numerical value, in case the parameter is a number.
-     */
-    double getNum();
 }
