@@ -1,15 +1,14 @@
 package org.blocklang;
 
 import org.blocklang.compiler.SourceBuilder;
-import org.blocklang.nodes.Context;
-import org.blocklang.nodes.Input;
-import org.blocklang.nodes.NodeBase;
-import org.blocklang.nodes.Output;
+import org.blocklang.block.BlockBase;
+import org.blocklang.block.parameter.Input;
+import org.blocklang.block.parameter.Output;
 
 /**
  *
  */
-public class AddNode extends NodeBase {
+public class AddBlock extends BlockBase {
 
     public final Input a = input("a", 0.0);
     public final Input b = input("b", 0.0);

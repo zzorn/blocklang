@@ -1,5 +1,6 @@
-package org.blocklang.nodes;
+package org.blocklang.block.parameter;
 
+import org.blocklang.block.parameter.ParamBase;
 import org.flowutils.Symbol;
 
 /**
@@ -7,7 +8,7 @@ import org.flowutils.Symbol;
  */
 public final class Output extends ParamBase {
 
-    protected Output(Symbol identifier, ParamType type, String description) {
+    public Output(Symbol identifier, ParamType type, String description) {
         super(identifier, type, description);
     }
 

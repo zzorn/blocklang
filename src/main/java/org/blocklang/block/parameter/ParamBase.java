@@ -1,11 +1,14 @@
-package org.blocklang.nodes;
+package org.blocklang.block.parameter;
 
+import org.blocklang.block.parameter.Param;
+import org.blocklang.block.parameter.ParamType;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
 
 /**
  *
  */
+// TODO: Drop non-common functionality down to implementations
 public abstract class ParamBase implements Param {
 
     private final Symbol identifier;

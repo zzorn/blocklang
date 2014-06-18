@@ -1,7 +1,10 @@
-package org.blocklang.nodes;
+package org.blocklang.block;
 
-import org.blocklang.compiler.CompiledBlock;
-import org.blocklang.compiler.SourceBuilder;
+import org.blocklang.block.parameter.Input;
+import org.blocklang.block.parameter.NumType;
+import org.blocklang.block.parameter.Output;
+import org.blocklang.block.parameter.ParamType;
+import org.blocklang.compiler.BlockCalculation;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
 import org.flowutils.collections.props.Props;
@@ -11,16 +14,16 @@ import org.flowutils.collections.props.ReadableProps;
 import java.util.*;
 
 /**
- * Common functionality for nodes.
+ * Common functionality for blocks.
  */
-public abstract class NodeBase implements Node {
+public abstract class BlockBase implements Block {
 
     private Map<Symbol, Input> inputs;
     private Map<Symbol, Output> outputs;
     private Output defaultOutput;
-    private final Set<NodeListener> listeners = new LinkedHashSet<NodeListener>(3);
+    private final Set<BlockListener> listeners = new LinkedHashSet<BlockListener>(3);
 
-    private CompiledBlock compiledBlock;
+    private BlockCalculation blockCalculation;
 
     private final Props parameterDelegate = new PropsBase() {
         @Override public <T> T get(Symbol id) {
@@ -70,22 +73,22 @@ public abstract class NodeBase implements Node {
         else return defaultOutput;
     }
 
-    @Override public final void addListener(NodeListener listener) {
+    @Override public final void addListener(BlockListener listener) {
         Check.notNull(listener, "listener");
 
         listeners.add(listener);
     }
 
-    @Override public final void removeListener(NodeListener listener) {
+    @Override public final void removeListener(BlockListener listener) {
         listeners.remove(listener);
     }
 
     @Override public final void calculateOutputs(ReadableProps context) {
-        if (compiledBlock == null) {
-            compiledBlock = compileCode();
+        if (blockCalculation == null) {
+            blockCalculation = compileCode();
         }
 
-        compiledBlock.calculate(parameterDelegate, parameterDelegate, null);
+        blockCalculation.calculate(parameterDelegate, parameterDelegate, null);
     }
 
     /*
@@ -95,7 +98,11 @@ public abstract class NodeBase implements Node {
     }
     */
 
-    protected final CompiledBlock compileCode() {
+    protected final BlockCalculation compileCode() {
+
+        // Generate code
+
+        // Compile
 
         // TODO: Implement
         return null;
@@ -235,11 +242,11 @@ public abstract class NodeBase implements Node {
     }
 
     /**
-     * Calls all registered node listeners and notifies them that this node has changed.
+     * Calls all registered block listeners and notifies them that this block has changed.
      */
-    protected final void notifyListenersNodeChanged() {
-        for (NodeListener listener : listeners) {
-            listener.onNodeChanged(this);
+    protected final void notifyListenersBlockChanged() {
+        for (BlockListener listener : listeners) {
+            listener.onBlockChanged(this);
         }
     }
 

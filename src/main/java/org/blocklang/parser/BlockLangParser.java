@@ -1,8 +1,6 @@
 package org.blocklang.parser;
 
-import org.blocklang.Function;
-
-import org.blocklang.nodes.Node;
+import org.blocklang.block.Block;
 import org.blocklang.parser.ast.AstNode;
 import org.blocklang.parser.ast.Num;
 import org.parboiled.BaseParser;
@@ -19,7 +17,7 @@ import java.util.Set;
  */
 public class BlockLangParser extends BaseParser<AstNode> implements LanguageParser {
 
-    @Override public Node parseNode(String source) {
+    @Override public Block parseNode(String source) {
         // TODO: Implement
         return null;
     }

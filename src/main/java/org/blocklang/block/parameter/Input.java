@@ -1,5 +1,6 @@
-package org.blocklang.nodes;
+package org.blocklang.block.parameter;
 
+import org.blocklang.block.parameter.ParamBase;
 import org.flowutils.Symbol;
 
 /**
@@ -9,12 +10,15 @@ public final class Input extends ParamBase {
 
     private final Object defaultValue;
 
-    protected Input(Symbol identifier, ParamType type, String description, Object defaultValue) {
+    public Input(Symbol identifier, ParamType type, String description, Object defaultValue) {
         super(identifier, type, description);
         this.defaultValue = defaultValue;
         set(defaultValue);
     }
 
+    public <T> T getDefaultValue() {
+        return (T) defaultValue;
+    }
 
     public final void set(Output source) {
         setSource(source);

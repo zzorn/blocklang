@@ -1,10 +1,11 @@
-package org.blocklang.nodes;
+package org.blocklang.block.parameter;
 
 import org.flowutils.Symbol;
 
 /**
  *
  */
+// TODO: Add listener support
 public interface Param {
 
     /**

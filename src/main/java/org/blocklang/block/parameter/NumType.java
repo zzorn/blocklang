@@ -1,4 +1,4 @@
-package org.blocklang.nodes;
+package org.blocklang.block.parameter;
 
 /**
  *
