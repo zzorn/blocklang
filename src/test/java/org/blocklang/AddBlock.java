@@ -1,5 +1,6 @@
 package org.blocklang;
 
+import org.blocklang.block.parameter.Internal;
 import org.blocklang.compiler.SourceBuilder;
 import org.blocklang.block.BlockBase;
 import org.blocklang.block.parameter.Input;

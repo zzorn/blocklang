@@ -6,22 +6,17 @@ import org.flowutils.Symbol;
 /**
  * Input parameter of a node.
  */
-public final class Input extends ParamBase {
+public final class Input extends SourceableParamBase {
 
-    private final Object defaultValue;
-
-    public Input(Symbol identifier, ParamType type, String description, Object defaultValue) {
-        super(identifier, type, description);
-        this.defaultValue = defaultValue;
-        set(defaultValue);
+    public Input(Symbol identifier, Class type) {
+        super(identifier, type);
     }
 
-    public <T> T getDefaultValue() {
-        return (T) defaultValue;
+    public Input(Symbol identifier, Class type, Object defaultValue) {
+        super(identifier, type, defaultValue);
     }
 
-    public final void set(Output source) {
-        setSource(source);
+    public Input(Symbol identifier, Class type, Object defaultValue, String description) {
+        super(identifier, type, defaultValue, description);
     }
-
 }

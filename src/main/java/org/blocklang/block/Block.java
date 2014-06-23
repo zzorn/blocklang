@@ -2,6 +2,7 @@ package org.blocklang.block;
 
 
 import org.blocklang.block.parameter.Input;
+import org.blocklang.block.parameter.Internal;
 import org.blocklang.block.parameter.Output;
 import org.blocklang.compiler.SourceBuilder;
 import org.flowutils.Symbol;
@@ -14,12 +15,18 @@ import java.util.Map;
  * has input properties that can be connected to outputs of other blocks,
  * and output properties that the calculated results are visible on.
  */
+// TODO: Way to hold internal state
 public interface Block {
 
     /**
      * @return read only map with the input properties of this block.
      */
     Map<Symbol, Input> getInputs();
+
+    /**
+     * @return read only map with internal properties available from this block, used to hold state for the block.
+     */
+    Map<Symbol, Internal> getInternalState();
 
     /**
      * @return read only map with the output properties available from this block.
@@ -31,6 +38,11 @@ public interface Block {
      *         The first output added to a block becomes the default output.
      */
     Output getDefaultOutput();
+
+    /**
+     * Resets the internal state parameters to their default values.
+     */
+    void resetInternalState();
 
     /**
      * Calculates the outputs of the block, using the blocks inputs and the specified surrounding context.

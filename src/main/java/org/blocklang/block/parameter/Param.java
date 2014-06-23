@@ -21,11 +21,16 @@ public interface Param {
     /**
      * @return type of the parameter.
      */
-    ParamType getType();
+    Class getType();
 
     /**
-     * @return current value of the parameter, if it is of an object type.
+     * @return current value of the parameter.
      */
     <T> T get();
+
+    /**
+     * @param value value to set the parameter to.  Must be of the correct type.
+     */
+    void set(Object value);
 
 }
