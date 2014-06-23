@@ -43,7 +43,7 @@ public abstract class BlockBase implements Block {
         getMutableOutputs();
     }
 
-    @Override public final void calculateOutputs(ReadableProps context) {
+    @Override public final void calculateOutputs(ReadableProps externalContext) {
         // Compile the calculation if not already compiled
         if (blockCalculation == null) {
             blockCalculation = compileCode();
@@ -55,7 +55,8 @@ public abstract class BlockBase implements Block {
         if (outputPropertiesDelegate   == null) outputPropertiesDelegate   = new PropertiesDelegate<Output>(getMutableOutputs());
 
         // Invoke calculation, delegating inputs, outputs, and internal state to parameters in this block.
-        blockCalculation.calculate(inputPropertiesDelegate,
+        blockCalculation.calculate(externalContext,
+                                   inputPropertiesDelegate,
                                    internalPropertiesDelegate,
                                    outputPropertiesDelegate,
                                    (CalculationListener) null);

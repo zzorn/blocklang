@@ -10,6 +10,7 @@ import org.flowutils.collections.props.WritableProps;
 public interface BlockCalculation {
 
     /**
+     * @param externalContext global context parameters for the calculation (e.g. current time).
      * @param inputParameters input parameters to the calculation.
      * @param internalParameters internal state parameters in the calculation.
      *                           Can be used to keep block state in over subsequent calculations,
@@ -19,7 +20,8 @@ public interface BlockCalculation {
      *                         May not be called at all if the calculation is short.
      *                         Pass in null if no progress listening is desired.
      */
-    void calculate(ReadableProps inputParameters,
+    void calculate(ReadableProps externalContext,
+                   ReadableProps inputParameters,
                    Props internalParameters,
                    WritableProps outputParameters,
                    CalculationListener calculationListener);

@@ -47,10 +47,11 @@ public interface Block {
     /**
      * Calculates the outputs of the block, using the blocks inputs and the specified surrounding context.
      *
-     * @param context context with current context variables (e.g. time, coordinates, etc).
+     * Compiles a program for this node if not already compiled, then executes it
+     *
+     * @param externalContext context with current context variables (e.g. time, coordinates, etc).
      */
-    // Compiles a program for this node if not already compiled, then executes it
-    void calculateOutputs(ReadableProps context);
+    void calculateOutputs(ReadableProps externalContext);
 
     /**
      * Generates code that does the calculations of this block, can be embedded in a program using this block, or compiled stand alone by this block.
