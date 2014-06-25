@@ -6,6 +6,7 @@ import org.blocklang.block.parameter.Output;
 import org.blocklang.block.parameter.Param;
 import org.blocklang.compiler.BlockCalculation;
 import org.blocklang.compiler.CalculationListener;
+import org.blocklang.compiler.SourceBuilder;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
 import org.flowutils.collections.props.PropsBase;
@@ -71,9 +72,13 @@ public abstract class BlockBase implements Block {
 
     protected final BlockCalculation compileCode() {
 
+        final SourceBuilder sourceBuilder = new SourceBuilder();
+
         // Generate code
+        generateCode(sourceBuilder);
 
         // Compile
+
 
         // TODO: Implement
         return null;
