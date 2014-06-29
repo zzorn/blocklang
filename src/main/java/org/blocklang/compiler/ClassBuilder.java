@@ -76,10 +76,10 @@ public final class ClassBuilder<T> {
         }
 
         // Add imports for the class/interface to extend/implement, and the return and parameter types of the calculation method to implement.
-        importType(implementedClass);
-        importType(calculationMethod.getReturnType());
+        addImport(implementedClass);
+        addImport(calculationMethod.getReturnType());
         for (Class<?> parameterType : calculationMethod.getParameterTypes()) {
-            importType(parameterType);
+            addImport(parameterType);
         }
 
     }
@@ -102,12 +102,12 @@ public final class ClassBuilder<T> {
     /**
      * Imports a specified class.
      */
-    public void importType(Class type) {
+    public void addImport(Class type) {
         notNull(type, "type");
 
         if (type.isArray()) {
             // Import the component type of the array
-            importType(type.getComponentType());
+            addImport(type.getComponentType());
         }
         else if (!type.isPrimitive()) {
             // Add import statement, if not already added
@@ -138,7 +138,7 @@ public final class ClassBuilder<T> {
 
 
     /**
-     * Constructs the source from the currently added code parts if needed, and returns it.
+     * Constructs the source from the currently added code parts if they have changed since the last call, and returns it.
      */
     public String createSource() {
 
