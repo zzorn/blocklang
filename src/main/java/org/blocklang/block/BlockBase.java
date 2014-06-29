@@ -6,7 +6,8 @@ import org.blocklang.block.parameter.Output;
 import org.blocklang.block.parameter.Param;
 import org.blocklang.compiler.BlockCalculation;
 import org.blocklang.compiler.CalculationListener;
-import org.blocklang.compiler.SourceBuilder;
+import org.blocklang.compiler.ClassBuilder;
+import org.blocklang.compiler.CompilationException;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
 import org.flowutils.collections.props.PropsBase;
@@ -44,6 +45,35 @@ public abstract class BlockBase implements Block {
         getMutableOutputs();
     }
 
+    /*
+    @Override public void generateCode(SourceBuilder sourceBuilder) {
+
+        // TODO: Implement
+    }
+    */
+
+    protected final BlockCalculation compileCode() {
+
+        final ClassBuilder<BlockCalculation> classBuilder = new ClassBuilder<BlockCalculation>(
+                BlockCalculation.class,
+                "calculate",
+                "externalContext",
+                "inputParameters",
+                "internalParameters",
+                "outputParameters",
+                "calculationListener");
+
+        // Generate code
+        generateCode(classBuilder);
+
+        // Compile and create instance
+        try {
+            return classBuilder.createInstance();
+        } catch (CompilationException e) {
+            throw new IllegalStateException("Unexpected problem compiling a block: " + e.getMessage(), e);
+        }
+    }
+
     @Override public final void calculateOutputs(ReadableProps externalContext) {
         // Compile the calculation if not already compiled
         if (blockCalculation == null) {
@@ -61,27 +91,6 @@ public abstract class BlockBase implements Block {
                                    internalPropertiesDelegate,
                                    outputPropertiesDelegate,
                                    (CalculationListener) null);
-    }
-
-    /*
-    @Override public void generateCode(SourceBuilder sourceBuilder) {
-
-        // TODO: Implement
-    }
-    */
-
-    protected final BlockCalculation compileCode() {
-
-        final SourceBuilder sourceBuilder = new SourceBuilder();
-
-        // Generate code
-        generateCode(sourceBuilder);
-
-        // Compile
-
-
-        // TODO: Implement
-        return null;
     }
 
     @Override public final Map<Symbol, Input> getInputs() {

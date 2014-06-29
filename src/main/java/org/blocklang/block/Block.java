@@ -4,7 +4,7 @@ package org.blocklang.block;
 import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Internal;
 import org.blocklang.block.parameter.Output;
-import org.blocklang.compiler.SourceBuilder;
+import org.blocklang.compiler.ClassBuilder;
 import org.flowutils.Symbol;
 import org.flowutils.collections.props.ReadableProps;
 
@@ -56,7 +56,7 @@ public interface Block {
     /**
      * Generates code that does the calculations of this block, can be embedded in a program using this block, or compiled stand alone by this block.
      */
-    void generateCode(SourceBuilder sourceBuilder);
+    void generateCode(ClassBuilder classBuilder);
 
     /**
      * @param listener a listener that is notified about changes to the block.

@@ -1,7 +1,6 @@
 package org.blocklang;
 
-import org.blocklang.block.parameter.Internal;
-import org.blocklang.compiler.SourceBuilder;
+import org.blocklang.compiler.ClassBuilder;
 import org.blocklang.block.BlockBase;
 import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Output;
@@ -15,7 +14,7 @@ public class AddBlock extends BlockBase {
     public final Input b = input("b", 0.0);
     public final Output out = output("result");
 
-    @Override public void generateCode(SourceBuilder sourceBuilder) {
+    @Override public void generateCode(ClassBuilder classBuilder) {
         // TODO: Implement
 
     }
