@@ -15,6 +15,7 @@ import static org.flowutils.Check.notNull;
  * Used to build up source for a class to be compiled,
  * and to compile the class from the source.
  */
+// TODO: Extract interface?
 public final class ClassBuilder<T> {
 
     private static final String GENERATED_CLASS_PACKAGE = "org.blocklang.generated";
@@ -30,6 +31,8 @@ public final class ClassBuilder<T> {
     private final String[] calculationMethodParameterNames;
 
     private String name;
+
+    private String generatedSource;
     private Class<? extends T> generatedClass;
 
     /**
@@ -97,7 +100,7 @@ public final class ClassBuilder<T> {
     }
 
     /**
-     * Imports a specified class, if it is white-listed.
+     * Imports a specified class.
      */
     public void importType(Class type) {
         notNull(type, "type");
@@ -135,51 +138,66 @@ public final class ClassBuilder<T> {
 
 
     /**
-     * Constructs the source from the currently added code parts and returns it.
+     * Constructs the source from the currently added code parts if needed, and returns it.
      */
     public String createSource() {
-        String implementsOrExtends = implementedClass.isInterface() ? "implements" : "extends";
 
-        // Construct code for parameter section of calculation method definition
-        StringBuilder calculationMethodParameters = new StringBuilder();
-        Class<?>[] parameterTypes = calculationMethod.getParameterTypes();
-        calculationMethodParameters.append("(");
-        for (int i = 0; i < parameterTypes.length; i++) {
-            if (i > 0) calculationMethodParameters.append(", ");
+        if (generatedSource == null) {
+            // Support both extending a base class or implementing an interface
+            String implementsOrExtends = implementedClass.isInterface() ? "implements" : "extends";
 
-            Class<?> parameterType = parameterTypes[i];
-            String parameterName = calculationMethodParameterNames[i];
+            // Construct code for parameter section of calculation method definition
+            StringBuilder calculationMethodParameters = new StringBuilder();
+            Class<?>[] parameterTypes = calculationMethod.getParameterTypes();
+            calculationMethodParameters.append("(");
+            for (int i = 0; i < parameterTypes.length; i++) {
+                if (i > 0) calculationMethodParameters.append(", ");
 
-            calculationMethodParameters.append(parameterType.getCanonicalName());
-            calculationMethodParameters.append(" ");
-            calculationMethodParameters.append(parameterName);
+                Class<?> parameterType = parameterTypes[i];
+                String parameterName = calculationMethodParameterNames[i];
+
+                calculationMethodParameters.append(parameterType.getCanonicalName());
+                calculationMethodParameters.append(" ");
+                calculationMethodParameters.append(parameterName);
+            }
+            calculationMethodParameters.append(")");
+
+            // Drop in supplied source into a skeleton for the generated class
+            generatedSource =
+                    "\n" +
+                    "// Source generated with ClassBuilder: \n" +
+                    "package " +
+                    GENERATED_CLASS_PACKAGE +
+                    ";\n" +
+                    sourcesFor(IMPORTS) +
+                    "public final class " +
+                    GENERATED_CLASS_NAME +
+                    " " +
+                    implementsOrExtends +
+                    " " +
+                    implementedClass.getName() +
+                    " {\n" +
+                    "  \n" +
+                    sourcesFor(FIELDS) +
+                    "  \n" +
+                    "  // Calculation method\n" +
+                    "  public " +
+                    calculationMethod.getReturnType().getCanonicalName() +
+                    " " +
+                    calculationMethod.getName() +
+                    calculationMethodParameters.toString() +
+                    " {\n" +
+                    sourcesFor(BEFORE_CALCULATION) +
+                    sourcesFor(AT_CALCULATION) +
+                    sourcesFor(AFTER_CALCULATION) +
+                    "  }\n" +
+                    "  \n" +
+                    sourcesFor(METHODS) +
+                    "}\n\n";
+
         }
-        calculationMethodParameters.append(")");
 
-
-        String source =
-                 "\n" +
-                 "// Source generated with ClassBuilder: \n" +
-                 "package " + GENERATED_CLASS_PACKAGE + ";\n" +
-                 sourcesFor(IMPORTS) +
-                 "public final class " + GENERATED_CLASS_NAME + " " + implementsOrExtends + " " + implementedClass.getName() + " {\n" +
-                 "  \n" +
-                 sourcesFor(FIELDS) +
-                 "  \n" +
-                 "  // Calculation method\n" +
-                 "  public " + calculationMethod.getReturnType().getCanonicalName() + " " + calculationMethod.getName() + calculationMethodParameters.toString() + " {\n" +
-                 sourcesFor(BEFORE_CALCULATION) +
-                 sourcesFor(AT_CALCULATION) +
-                 sourcesFor(AFTER_CALCULATION) +
-                 "  }\n" +
-                 "  \n" +
-                 sourcesFor(METHODS) +
-                 "}\n\n";
-
-        // TODO: DEBUG: print the generated sources, remove later
-        System.out.println("source = " + source);
-
-        return source;
+        return generatedSource;
     }
 
     /**
@@ -229,7 +247,7 @@ public final class ClassBuilder<T> {
             return generatedClass.newInstance();
 
         } catch (InstantiationException e) {
-            throw new CompilationException(e, name, null, "Could not could not instantiate the compiled class.");
+            throw new CompilationException(e, name, null, "Could not instantiate the compiled class.");
         } catch (IllegalAccessException e) {
             throw new CompilationException(e, name, null, "Could not access the compiled code.");
         }
@@ -241,6 +259,7 @@ public final class ClassBuilder<T> {
      * Ensures the generated class is recompiled next time it is requested.
      */
     private void codeChanged() {
+        generatedSource = null;
         generatedClass = null;
     }
 
@@ -248,16 +267,19 @@ public final class ClassBuilder<T> {
      * @return all sources added to the specified location, as a string, in the order they were added.
      */
     private String sourcesFor(final SourceLocation location) {
-        return "\n" +
-               location.getIndent() + "// " + location.toString() + "\n" +
-               sourcePortions.get(location).toString() +
-               "\n";
+        final String locationSources = sourcePortions.get(location).toString();
+
+        if (locationSources.isEmpty()) {
+            return "";
+        }
+        else {
+            return "\n" +
+                   location.getIndent() + "// " + location.toString() + "\n" +
+                   locationSources +
+                   "\n";
+        }
     }
 
-    /**
-     * Indicates where in the generated source some code should be placed.
-     * Used when adding source to SourceBuilder.
-     */
     private Method getMethod(Class<T> classToSearch, String methodName) {
         for (Method method : classToSearch.getMethods()) {
             if (method.getName().equals(methodName)) {
@@ -267,6 +289,10 @@ public final class ClassBuilder<T> {
         return null;
     }
 
+    /**
+     * Indicates where in the generated source some code should be placed.
+     * Used when adding source to SourceBuilder.
+     */
     public static enum SourceLocation {
         IMPORTS(0, false, false),
         FIELDS(1, true, false),
