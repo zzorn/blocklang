@@ -51,6 +51,9 @@ public abstract class BlockBase implements Block {
         // TODO: Implement
     }
     */
+    // TODO: Generate overall code skeleton (extract or get inputs, create fields for internal, create variables and return code for outputs), have a protected abstract method that derived classes need to implement which generates
+    // the actual calculation code.
+    // TODO: Add functions to Param or BlockBase for getting the generated code name of a given input/output.
 
     protected final BlockCalculation compileCode() {
 
@@ -310,6 +313,8 @@ public abstract class BlockBase implements Block {
     protected final Output output(String name, Class type, String description) {
         return addOutput(new Output(Symbol.get(name), type, null, description));
     }
+
+    // TODO: Throw exception if the same identifier already exists as input, internal, or external.
 
     private Input addInput(Input input) {
         getMutableInputs().put(input.getIdentifier(), input);
