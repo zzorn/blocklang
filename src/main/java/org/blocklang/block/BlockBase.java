@@ -6,10 +6,11 @@ import org.blocklang.block.parameter.Output;
 import org.blocklang.block.parameter.Param;
 import org.blocklang.compiler.BlockCalculation;
 import org.blocklang.compiler.CalculationListener;
-import org.blocklang.compiler.ClassBuilder;
-import org.blocklang.compiler.CompilationException;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
+import org.flowutils.classbuilder.ClassBuilder;
+import org.flowutils.classbuilder.ClassBuilderException;
+import org.flowutils.classbuilder.JaninoClassBuilder;
 import org.flowutils.collections.props.PropsBase;
 import org.flowutils.collections.props.ReadableProps;
 
@@ -57,7 +58,7 @@ public abstract class BlockBase implements Block {
 
     protected final BlockCalculation compileCode() {
 
-        final ClassBuilder<BlockCalculation> classBuilder = new ClassBuilder<BlockCalculation>(
+        final ClassBuilder<BlockCalculation> classBuilder = new JaninoClassBuilder<BlockCalculation>(
                 BlockCalculation.class,
                 "calculate",
                 "externalContext",
@@ -72,7 +73,7 @@ public abstract class BlockBase implements Block {
         // Compile and create instance
         try {
             return classBuilder.createInstance();
-        } catch (CompilationException e) {
+        } catch (ClassBuilderException e) {
             throw new IllegalStateException("Unexpected problem compiling a block: " + e.getMessage(), e);
         }
     }

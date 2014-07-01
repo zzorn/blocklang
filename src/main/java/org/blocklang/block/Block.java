@@ -4,8 +4,8 @@ package org.blocklang.block;
 import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Internal;
 import org.blocklang.block.parameter.Output;
-import org.blocklang.compiler.ClassBuilder;
 import org.flowutils.Symbol;
+import org.flowutils.classbuilder.ClassBuilder;
 import org.flowutils.collections.props.ReadableProps;
 
 import java.util.Map;

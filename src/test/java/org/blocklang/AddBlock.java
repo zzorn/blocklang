@@ -1,9 +1,9 @@
 package org.blocklang;
 
-import org.blocklang.compiler.ClassBuilder;
 import org.blocklang.block.BlockBase;
 import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Output;
+import org.flowutils.classbuilder.ClassBuilder;
 
 /**
  *

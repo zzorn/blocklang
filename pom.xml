@@ -42,14 +42,7 @@
         <dependency>
             <groupId>org.flowutils</groupId>
             <artifactId>flowutils</artifactId>
-            <version>0.1.27</version>
-        </dependency>
-
-        <!-- For java compilation and bytecode generation -->
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>2.6.1</version>
+            <version>0.1.28</version>
         </dependency>
 
         <!-- For language parsing -->
