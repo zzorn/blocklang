@@ -9,22 +9,22 @@ public abstract class SourceableParamBase extends ParamBase {
 
     private Param source = null;
 
-    protected SourceableParamBase(Symbol identifier,
+    protected SourceableParamBase(Symbol name,
                                   Class type) {
-        super(identifier, type);
+        super(name, type);
     }
 
-    protected SourceableParamBase(Symbol identifier,
+    protected SourceableParamBase(Symbol name,
                                   Class type,
                                   Object defaultValue) {
-        super(identifier, type, defaultValue);
+        super(name, type, defaultValue);
     }
 
-    protected SourceableParamBase(Symbol identifier,
+    protected SourceableParamBase(Symbol name,
                                   Class type,
                                   Object defaultValue,
                                   String description) {
-        super(identifier, type, defaultValue, description);
+        super(name, type, defaultValue, description);
     }
 
     /**

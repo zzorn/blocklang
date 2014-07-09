@@ -5,7 +5,7 @@ import org.flowutils.collections.props.ReadableProps;
 import org.flowutils.collections.props.WritableProps;
 
 /**
- * Represents the functionality of a block.  Interface used by generated compiled code.
+ * Represents the functionality of a block or composite block.  Interface used by generated compiled code.
  */
 public interface BlockCalculation {
 

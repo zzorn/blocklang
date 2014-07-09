@@ -8,9 +8,6 @@ import org.blocklang.compiler.BlockCalculation;
 import org.blocklang.compiler.CalculationListener;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
-import org.flowutils.classbuilder.ClassBuilder;
-import org.flowutils.classbuilder.ClassBuilderException;
-import org.flowutils.classbuilder.JaninoClassBuilder;
 import org.flowutils.collections.props.PropsBase;
 import org.flowutils.collections.props.ReadableProps;
 
@@ -46,36 +43,32 @@ public abstract class BlockBase implements Block {
         getMutableOutputs();
     }
 
-    /*
-    @Override public void generateCode(SourceBuilder sourceBuilder) {
+    @Override public final void generateCode(BlockBuilder blockBuilder) {
+        // TODO: Generate overall code skeleton (extract or get inputs, create fields for internal, create variables and
+        // return code for outputs), have a protected abstract method that derived classes need to implement which generates
+        // the actual calculation code.
+        // TODO: Add functions to Param or BlockBase for getting the generated code name of a given input/output.
 
-        // TODO: Implement
+
+        doGenerateCode(blockBuilder);
+
     }
-    */
-    // TODO: Generate overall code skeleton (extract or get inputs, create fields for internal, create variables and return code for outputs), have a protected abstract method that derived classes need to implement which generates
-    // the actual calculation code.
-    // TODO: Add functions to Param or BlockBase for getting the generated code name of a given input/output.
+
+    /**
+     * Generate block specific code.
+     * @param blockBuilder builder to add generated code lines to.
+     */
+    protected abstract void doGenerateCode(BlockBuilder blockBuilder);
 
     protected final BlockCalculation compileCode() {
 
-        final ClassBuilder<BlockCalculation> classBuilder = new JaninoClassBuilder<BlockCalculation>(
-                BlockCalculation.class,
-                "calculate",
-                "externalContext",
-                "inputParameters",
-                "internalParameters",
-                "outputParameters",
-                "calculationListener");
+        final BlockBuilder blockBuilder = new BlockBuilderImpl();
 
         // Generate code
-        generateCode(classBuilder);
+        generateCode(blockBuilder);
 
         // Compile and create instance
-        try {
-            return classBuilder.createInstance();
-        } catch (ClassBuilderException e) {
-            throw new IllegalStateException("Unexpected problem compiling a block: " + e.getMessage(), e);
-        }
+        return blockBuilder.createCalculation();
     }
 
     @Override public final void calculateOutputs(ReadableProps externalContext) {
@@ -130,6 +123,14 @@ public abstract class BlockBase implements Block {
 
     @Override public final void removeListener(BlockListener listener) {
         listeners.remove(listener);
+    }
+
+    @Override public Param getParameter(Symbol name) {
+        Param param = inputs.get(name);
+        if (param == null) param = outputs.get(name);
+        if (param == null) param = internals.get(name);
+
+        return param;
     }
 
     /**
@@ -318,22 +319,30 @@ public abstract class BlockBase implements Block {
     // TODO: Throw exception if the same identifier already exists as input, internal, or external.
 
     private Input addInput(Input input) {
-        getMutableInputs().put(input.getIdentifier(), input);
+        addParam(input, getMutableInputs(), "input");
         return input;
     }
 
     private Internal addInternal(Internal internal) {
-        getMutableInternals().put(internal.getIdentifier(), internal);
+        addParam(internal, getMutableInternals(), "internal");
         return internal;
     }
 
     private Output addOutput(Output output) {
-        getMutableOutputs().put(output.getIdentifier(), output);
+        addParam(output, getMutableOutputs(), "output");
 
         // Initialize defaultOutput if this is the first output
         if (defaultOutput == null) defaultOutput = output;
 
         return output;
+    }
+
+    private <T extends Param> void addParam(T param, Map<Symbol, T> params, String paramCategoryName) {
+        final Symbol name = param.getName();
+
+        if (params.containsKey(name)) throw new IllegalArgumentException("An "+paramCategoryName+" named " + name + " has already been added to this block!");
+
+        params.put(name, param);
     }
 
 

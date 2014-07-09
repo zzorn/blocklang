@@ -1,5 +1,6 @@
 package org.blocklang.block.parameter;
 
+import org.blocklang.block.BlockBuilder;
 import org.flowutils.Symbol;
 
 /**
@@ -9,9 +10,9 @@ import org.flowutils.Symbol;
 public interface Param {
 
     /**
-     * @return identifier of the parameter.
+     * @return name of the parameter.
      */
-    Symbol getIdentifier();
+    Symbol getName();
 
     /**
      * @return user readable description of the parameter, or null if none available.
@@ -33,4 +34,13 @@ public interface Param {
      */
     void set(Object value);
 
+    /**
+     * @return string describing the subtype of the parameter (input, output, etc).
+     */
+    String getSubtypeName();
+
+    /**
+     * @return unique identifier to use for this parameter in the code generated with the specified blockBuilder.
+     */
+    String getId(BlockBuilder blockBuilder);
 }

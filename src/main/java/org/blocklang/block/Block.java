@@ -4,6 +4,7 @@ package org.blocklang.block;
 import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Internal;
 import org.blocklang.block.parameter.Output;
+import org.blocklang.block.parameter.Param;
 import org.flowutils.Symbol;
 import org.flowutils.classbuilder.ClassBuilder;
 import org.flowutils.collections.props.ReadableProps;
@@ -55,8 +56,10 @@ public interface Block {
 
     /**
      * Generates code that does the calculations of this block, can be embedded in a program using this block, or compiled stand alone by this block.
+     *
+     * @param blockBuilder add generated source to this builder.
      */
-    void generateCode(ClassBuilder classBuilder);
+    void generateCode(BlockBuilder blockBuilder);
 
     /**
      * @param listener a listener that is notified about changes to the block.
@@ -67,5 +70,10 @@ public interface Block {
      * @param listener listener to remove.
      */
     void removeListener(BlockListener listener);
+
+    /**
+     * @return the input, output or internal parameter with the specified name, or null if none found.
+     */
+    Param getParameter(Symbol name);
 
 }

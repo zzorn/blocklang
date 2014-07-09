@@ -1,5 +1,6 @@
 package org.blocklang.block.parameter;
 
+import org.blocklang.block.BlockBuilder;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
 
@@ -8,7 +9,7 @@ import org.flowutils.Symbol;
  */
 public abstract class ParamBase implements Param {
 
-    private final Symbol identifier;
+    private final Symbol name;
     private final String description;
     private final Class type;
     private final Object defaultValue;
@@ -17,33 +18,33 @@ public abstract class ParamBase implements Param {
 
 
     /**
-     * @param identifier name for the parameter, should be unique within the block the parameter is in.
+     * @param name name for the parameter, should be unique within the block the parameter is in.
      * @param type type of the parameter.
      */
-    public ParamBase(Symbol identifier, Class type) {
-        this(identifier, type, null, null);
+    public ParamBase(Symbol name, Class type) {
+        this(name, type, null, null);
     }
 
     /**
-     * @param identifier name for the parameter, should be unique within the block the parameter is in.
+     * @param name name for the parameter, should be unique within the block the parameter is in.
      * @param type type of the parameter.
      * @param defaultValue initial and default value for the parameter.
      */
-    public ParamBase(Symbol identifier, Class type, Object defaultValue) {
-        this(identifier, type, defaultValue, null);
+    public ParamBase(Symbol name, Class type, Object defaultValue) {
+        this(name, type, defaultValue, null);
     }
 
     /**
-     * @param identifier name for the parameter, should be unique within the block the parameter is in.
+     * @param name name for the parameter, should be unique within the block the parameter is in.
      * @param type type of the parameter.
      * @param defaultValue initial and default value for the parameter.
      * @param description human readable description of the parameter.
      */
-    public ParamBase(Symbol identifier, Class type, Object defaultValue, String description) {
-        Check.notNull(identifier, "identifier");
+    public ParamBase(Symbol name, Class type, Object defaultValue, String description) {
+        Check.notNull(name, "name");
         Check.notNull(type, "type");
 
-        this.identifier = identifier;
+        this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
         this.description = description;
@@ -51,8 +52,8 @@ public abstract class ParamBase implements Param {
         set(defaultValue);
     }
 
-    public final Symbol getIdentifier() {
-        return identifier;
+    public final Symbol getName() {
+        return name;
     }
 
     public final String getDescription() {
@@ -79,10 +80,14 @@ public abstract class ParamBase implements Param {
             throw new IllegalArgumentException("The value '" + value + "' " +
                                                "of type "+ (value == null ? "null" : value.getClass().getName())+" " +
                                                "is not an instance of " + getType() + ", " +
-                                               "can not assign it to the parameter " + getIdentifier());
+                                               "can not assign it to the parameter " + getName());
         }
 
         this.value = value;
+    }
+
+    @Override public final String getId(BlockBuilder blockBuilder) {
+        return blockBuilder.getParamId(this);
     }
 
     /**

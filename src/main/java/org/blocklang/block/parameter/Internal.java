@@ -9,30 +9,33 @@ import org.flowutils.Symbol;
 public final class Internal extends ParamBase {
 
     /**
-     * @param identifier name for the parameter, should be unique within the block the parameter is in.
+     * @param name name for the parameter, should be unique within the block the parameter is in.
      * @param type       type of the parameter.
      */
-    public Internal(Symbol identifier, Class type) {
-        super(identifier, type);
+    public Internal(Symbol name, Class type) {
+        super(name, type);
     }
 
     /**
-     * @param identifier   name for the parameter, should be unique within the block the parameter is in.
+     * @param name   name for the parameter, should be unique within the block the parameter is in.
      * @param type         type of the parameter.
      * @param defaultValue initial and default value for the parameter.
      */
-    public Internal(Symbol identifier, Class type, Object defaultValue) {
-        super(identifier, type, defaultValue);
+    public Internal(Symbol name, Class type, Object defaultValue) {
+        super(name, type, defaultValue);
     }
 
     /**
-     * @param identifier   name for the parameter, should be unique within the block the parameter is in.
+     * @param name   name for the parameter, should be unique within the block the parameter is in.
      * @param type         type of the parameter.
      * @param defaultValue initial and default value for the parameter.
      * @param description  human readable description of the parameter.
      */
-    public Internal(Symbol identifier, Class type, Object defaultValue, String description) {
-        super(identifier, type, defaultValue, description);
+    public Internal(Symbol name, Class type, Object defaultValue, String description) {
+        super(name, type, defaultValue, description);
     }
 
+    @Override public String getSubtypeName() {
+        return "internal";
+    }
 }

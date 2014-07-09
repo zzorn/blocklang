@@ -1,6 +1,5 @@
 package org.blocklang.block.parameter;
 
-import org.blocklang.block.parameter.ParamBase;
 import org.flowutils.Symbol;
 
 /**
@@ -8,15 +7,19 @@ import org.flowutils.Symbol;
  */
 public final class Input extends SourceableParamBase {
 
-    public Input(Symbol identifier, Class type) {
-        super(identifier, type);
+    public Input(Symbol name, Class type) {
+        super(name, type);
     }
 
-    public Input(Symbol identifier, Class type, Object defaultValue) {
-        super(identifier, type, defaultValue);
+    public Input(Symbol name, Class type, Object defaultValue) {
+        super(name, type, defaultValue);
     }
 
-    public Input(Symbol identifier, Class type, Object defaultValue, String description) {
-        super(identifier, type, defaultValue, description);
+    public Input(Symbol name, Class type, Object defaultValue, String description) {
+        super(name, type, defaultValue, description);
+    }
+
+    @Override public String getSubtypeName() {
+        return "input";
     }
 }

@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.flowutils</groupId>
             <artifactId>flowutils</artifactId>
-            <version>0.1.28</version>
+            <version>0.1.29</version>
         </dependency>
 
         <!-- For language parsing -->
