@@ -4,12 +4,14 @@ import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Internal;
 import org.blocklang.block.parameter.Output;
 import org.blocklang.block.parameter.Param;
-import org.blocklang.compiler.BlockCalculation;
+import org.blocklang.compiler.BlockCalculator;
 import org.blocklang.compiler.CalculationListener;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
+import org.flowutils.classbuilder.SourceLocation;
 import org.flowutils.collections.props.PropsBase;
 import org.flowutils.collections.props.ReadableProps;
+import org.flowutils.collections.props.WritableProps;
 
 import java.util.*;
 
@@ -28,10 +30,9 @@ public abstract class BlockBase implements Block {
     private Output defaultOutput;
     private final Set<BlockListener> listeners = new LinkedHashSet<BlockListener>(3);
 
-    private BlockCalculation blockCalculation;
+    private BlockCalculator blockCalculator;
 
     private PropertiesDelegate<Input> inputPropertiesDelegate;
-    private PropertiesDelegate<Internal> internalPropertiesDelegate;
     private PropertiesDelegate<Output> outputPropertiesDelegate;
 
     /**
@@ -43,14 +44,61 @@ public abstract class BlockBase implements Block {
         getMutableOutputs();
     }
 
-    @Override public final void generateCode(BlockBuilder blockBuilder) {
+    /**
+     * Generate code that reads input parameters, initializes internal parameters, generates any block-specific code,
+     * and then updates the output parameters (and internal parameters).
+     */
+    public void generateCalculatorCode(BlockBuilder blockBuilder) {
+
         // TODO: Generate overall code skeleton (extract or get inputs, create fields for internal, create variables and
         // return code for outputs), have a protected abstract method that derived classes need to implement which generates
         // the actual calculation code.
         // TODO: Add functions to Param or BlockBase for getting the generated code name of a given input/output.
 
 
+        // Create block-specific code
+        generateCode(blockBuilder);
+
+    }
+
+    @Override public final void generateCode(BlockBuilder blockBuilder) {
+
+        // Set current block for the builder, used to resolve parameter references
+        blockBuilder.setCurrentBlock(this);
+
+        // Add parameter fields
+        for (Input input : inputs.values()) {
+            blockBuilder.addParamField(input);
+        }
+        for (Output output : outputs.values()) {
+            blockBuilder.addParamField(output);
+        }
+        for (Internal internal : internals.values()) {
+            blockBuilder.addParamField(internal);
+        }
+
+        // Add initialization of input values
+        for (Input input : inputs.values()) {
+            final String inputName = input.getName().toString();
+            final String inputField = input.getId(blockBuilder);
+            blockBuilder.addSourceLine(SourceLocation.BEFORE_CALCULATION,
+                                       "if (inputParameters.has(\"" + inputName +"\")) { " +
+                                       inputField + " = (" + input.getType().getCanonicalName() +") (inputParameters.get(\"" + inputName +"\").get()); " +
+                                       "}");
+        }
+
+        // Create block-specific code
         doGenerateCode(blockBuilder);
+
+        // Add return of output values
+        for (Output output : outputs.values()) {
+            final String outputName = output.getName().toString();
+            final String outputField = output.getId(blockBuilder);
+            blockBuilder.addSourceLine(SourceLocation.AFTER_CALCULATION, "outputParameters.get(\""+ outputName +"\").set("+ outputField +");");
+        }
+
+        // Clear current block
+        blockBuilder.setCurrentBlock(null);
 
     }
 
@@ -60,32 +108,34 @@ public abstract class BlockBase implements Block {
      */
     protected abstract void doGenerateCode(BlockBuilder blockBuilder);
 
-    protected final BlockCalculation compileCode() {
-
-        final BlockBuilder blockBuilder = new BlockBuilderImpl();
+    protected final BlockCalculator compileCode() {
 
         // Generate code
-        generateCode(blockBuilder);
+        final BlockBuilder blockBuilder = new BlockBuilderImpl();
+        generateCalculatorCode(blockBuilder);
 
         // Compile and create instance
-        return blockBuilder.createCalculation();
+        return blockBuilder.createCalculator();
+    }
+
+    @Override public final void calculateOutputs() {
+        calculateOutputs(null);
     }
 
     @Override public final void calculateOutputs(ReadableProps externalContext) {
         // Compile the calculation if not already compiled
-        if (blockCalculation == null) {
-            blockCalculation = compileCode();
+        if (blockCalculator == null) {
+            blockCalculator = compileCode();
         }
+        if (blockCalculator == null) throw new IllegalStateException("BlockCalculator should have been created");
 
         // Initialize the delegates if not already initialized.
         if (inputPropertiesDelegate    == null) inputPropertiesDelegate    = new PropertiesDelegate<Input>(getMutableInputs());
-        if (internalPropertiesDelegate == null) internalPropertiesDelegate = new PropertiesDelegate<Internal>(getMutableInternals());
         if (outputPropertiesDelegate   == null) outputPropertiesDelegate   = new PropertiesDelegate<Output>(getMutableOutputs());
 
         // Invoke calculation, delegating inputs, outputs, and internal state to parameters in this block.
-        blockCalculation.calculate(externalContext,
+        blockCalculator.calculate(externalContext,
                                    inputPropertiesDelegate,
-                                   internalPropertiesDelegate,
                                    outputPropertiesDelegate,
                                    (CalculationListener) null);
     }
@@ -94,7 +144,7 @@ public abstract class BlockBase implements Block {
         return Collections.unmodifiableMap(getMutableInputs());
     }
 
-    @Override public Map<Symbol, Internal> getInternalState() {
+    @Override public Map<Symbol, Internal> getInternalParams() {
         return Collections.unmodifiableMap(internals);
     }
 
@@ -108,11 +158,23 @@ public abstract class BlockBase implements Block {
     }
 
     @Override public final void resetInternalState() {
+        // TODO: If composite block, recursively call resetInternalState.  Also just reset internal state.
+
         if (internals != null) {
             for (Internal internal : internals.values()) {
                 internal.resetToDefault();
             }
         }
+    }
+
+    @Override public void getInternalState(WritableProps internalState) {
+        // TODO: Implement
+
+    }
+
+    @Override public void setInternalState(ReadableProps internalState) {
+        // TODO: Implement
+
     }
 
     @Override public final void addListener(BlockListener listener) {

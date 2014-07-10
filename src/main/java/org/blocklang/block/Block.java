@@ -8,6 +8,7 @@ import org.blocklang.block.parameter.Param;
 import org.flowutils.Symbol;
 import org.flowutils.classbuilder.ClassBuilder;
 import org.flowutils.collections.props.ReadableProps;
+import org.flowutils.collections.props.WritableProps;
 
 import java.util.Map;
 
@@ -16,18 +17,14 @@ import java.util.Map;
  * has input properties that can be connected to outputs of other blocks,
  * and output properties that the calculated results are visible on.
  */
-// TODO: Way to hold internal state
+// TODO: Implement composite/container/module block
+// TODO: Way to hold internal state -- keep it in the BlockCalculation, so that there is no need to get&set all fields between each simulation cycle (instead only when they need to be serialized / deserialized)
 public interface Block {
 
     /**
      * @return read only map with the input properties of this block.
      */
     Map<Symbol, Input> getInputs();
-
-    /**
-     * @return read only map with internal properties available from this block, used to hold state for the block.
-     */
-    Map<Symbol, Internal> getInternalState();
 
     /**
      * @return read only map with the output properties available from this block.
@@ -41,9 +38,34 @@ public interface Block {
     Output getDefaultOutput();
 
     /**
+     * @return read only map with information about the internal properties in this block.
+     */
+    Map<Symbol, Internal> getInternalParams();
+
+    /**
+     * Retrieve the complete internal state of this block and any contained blocks, and store it in the specified WritableProps.
+     * Can be used for serializing the state of a block or composite block.
+     */
+    // NOTE: Breaks if any internal property added or removed
+    void getInternalState(WritableProps internalState);
+
+    /**
+     * Set the complete internal state of this block and any contained blocks, from the specified ReadableProps.
+     * Can be used for serializing the state of a block or composite block.
+     */
+    void setInternalState(ReadableProps internalState);
+
+    /**
      * Resets the internal state parameters to their default values.
      */
     void resetInternalState();
+
+    /**
+     * Calculates the outputs of the block, using the blocks inputs.
+     *
+     * Compiles a program for this node if not already compiled, then executes it
+     */
+    void calculateOutputs();
 
     /**
      * Calculates the outputs of the block, using the blocks inputs and the specified surrounding context.

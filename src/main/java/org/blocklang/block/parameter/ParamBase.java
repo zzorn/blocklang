@@ -64,10 +64,20 @@ public abstract class ParamBase implements Param {
         return type;
     }
 
-    /**
-     * @return default value to use for the parameter when uninitialized.
-     */
-    public final Object getDefaultValue() {
+    @Override public final Class getPrimitiveTypeIfPossible() {
+        // Report wrapped primitives as raw primitive types
+        if (type.equals(Double.class))  return Double.TYPE;
+        if (type.equals(Float.class))   return Float.TYPE;
+        if (type.equals(Long.class))    return Long.TYPE;
+        if (type.equals(Integer.class)) return Integer.TYPE;
+        if (type.equals(Short.class))   return Short.TYPE;
+        if (type.equals(Byte.class))    return Byte.TYPE;
+        if (type.equals(Boolean.class)) return Boolean.TYPE;
+
+        return type;
+    }
+
+    @Override public final Object getDefaultValue() {
         return defaultValue;
     }
 

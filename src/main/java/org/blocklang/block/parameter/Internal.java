@@ -6,6 +6,7 @@ import org.flowutils.Symbol;
  * Parameter representing an internal state variable for a block.
  * Only readable and writable internally, not accessible from outside the block.
  */
+// TODO: Should only contain a defaultValue, not currentValue?
 public final class Internal extends ParamBase {
 
     /**

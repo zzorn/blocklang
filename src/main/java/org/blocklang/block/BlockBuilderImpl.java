@@ -1,7 +1,7 @@
 package org.blocklang.block;
 
 import org.blocklang.block.parameter.Param;
-import org.blocklang.compiler.BlockCalculation;
+import org.blocklang.compiler.BlockCalculator;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
 import org.flowutils.classbuilder.ClassBuilder;
@@ -11,45 +11,65 @@ import org.flowutils.classbuilder.SourceLocation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.flowutils.classbuilder.SourceLocation.FIELDS;
+import static org.flowutils.classbuilder.SourceLocation.METHODS;
 
 /**
  *
  */
+// TODO: Add addInput / addOutput / addInternal methods, store the default value in some map or similar, pass that to the instance when initialized.
 public final class BlockBuilderImpl implements BlockBuilder {
 
     private static final int PARAMETER_NAME_TRUNCATE_LENGTH = 20;
-    private final ClassBuilder<BlockCalculation> classBuilder;
+    private final ClassBuilder<BlockCalculator> classBuilder;
     private final Map<Param, String> uniqueParamIds = new LinkedHashMap<Param, String>();
     private Block currentBlock;
 
     private final Pattern namePattern = Pattern.compile("\\$(\\w+)");
 
+    private final Map<String, Object> parameterDefaultValues = new ConcurrentHashMap<String, Object>();
+    private final StringBuilder initializeDefaultsMethod = new StringBuilder();
+
     public BlockBuilderImpl() {
-        classBuilder = new JaninoClassBuilder<BlockCalculation>(BlockCalculation.class,
+        classBuilder = new JaninoClassBuilder<BlockCalculator>(BlockCalculator.class,
                                                                 "calculate",
                                                                 "externalContext",
                                                                 "inputParameters",
-                                                                "internalParameters",
                                                                 "outputParameters",
                                                                 "calculationListener");
+
+        // Start initialization method
+        initializeDefaultsMethod.append("public void initializeDefaults(Map parameterDefaults) {\n");
+        addImport(Map.class);
     }
 
-    /**
-     * This method is called by the BlockBase code, no need to call this in specific Block implementations.
-     *
-     * @param currentBlock the block that is currently being generated, or null if non-block specific code is being generated.
-     *                     Used for resolving shorthand references ("$paramName") to block parameters in added code.
-     */
-    public void setCurrentBlock(Block currentBlock) {
+    @Override public void setCurrentBlock(Block currentBlock) {
         this.currentBlock = currentBlock;
     }
 
-    @Override public BlockCalculation createCalculation() {
+    @Override public BlockCalculator createCalculator() {
+
+        // Finalize initialization method
+        initializeDefaultsMethod.append("  }");
+        classBuilder.addSourceLine(METHODS, initializeDefaultsMethod.toString());
+
         try {
-            // Compile and return a new instance
-            return classBuilder.createInstance();
+            // Compile a new instance
+            final BlockCalculator blockCalculator = classBuilder.createInstance();
+
+
+            // TODO: Remove: DEBUG: show code:
+            System.out.println(classBuilder.createSource());
+
+
+            // Initialize it
+            blockCalculator.initializeDefaults(parameterDefaultValues);
+
+            return blockCalculator;
         } catch (ClassBuilderException e) {
             throw new IllegalStateException("Problem when creating a BlockCalculator: " + e.getMessage(), e);
         }
@@ -104,7 +124,7 @@ public final class BlockBuilderImpl implements BlockBuilder {
     @Override public String getParamId(Param param) {
         if (!uniqueParamIds.containsKey(param)) {
             // Ensure that the parameter id can be safely used in generated code, and truncate it if it is too long.
-            String paramIdentifier = param.getName().getName();
+            String paramIdentifier = param.getName().getString();
             if (paramIdentifier.length() > PARAMETER_NAME_TRUNCATE_LENGTH) {
                 paramIdentifier = paramIdentifier.substring(0, PARAMETER_NAME_TRUNCATE_LENGTH);
             }
@@ -120,11 +140,32 @@ public final class BlockBuilderImpl implements BlockBuilder {
         }
     }
 
+    @Override public String addParamField(Param parameter) {
+        // Get unique identifier for the variable
+        final String id = getParamId(parameter);
+
+        // Import type if needed
+        final Class type = parameter.getType();
+        addImport(type);
+
+        // Add field declaration
+        addSourceLine(FIELDS, "private " + parameter.getPrimitiveTypeIfPossible().getCanonicalName() + " " + id + ";");
+
+        // Add field initialization
+        initializeDefaultsMethod.append("    if (parameterDefaults.containsKey(\""+id+"\")) { " + id + " = ("+type.getCanonicalName()+") parameterDefaults.get(\""+id+"\"); }\n");
+
+        // Store default value for initialization
+        parameterDefaultValues.put(id, parameter.getDefaultValue());
+
+        // Return unique identifier of the parameter field
+        return id;
+    }
+
     @Override public String addField(Class type,
                                      String name,
                                      boolean makeFinal,
                                      String initializationExpression) {
-        return addVar(SourceLocation.FIELDS, type, name, makeFinal, initializationExpression);
+        return addVar(FIELDS, type, name, makeFinal, initializationExpression);
     }
 
     @Override public String addVar(Class type,
@@ -153,7 +194,7 @@ public final class BlockBuilderImpl implements BlockBuilder {
         String line = (makeFinal ? "final " : "") + type.getCanonicalName() + " " + id + (initializationExpression == null ? "" : " = " + initializationExpression) + ";";
 
         // Fields need to be prefixed with visibility modifier
-        if (location == SourceLocation.FIELDS) {
+        if (location == FIELDS) {
             line = "private " + line;
         }
 

@@ -1,7 +1,7 @@
 package org.blocklang.block;
 
 import org.blocklang.block.parameter.Param;
-import org.blocklang.compiler.BlockCalculation;
+import org.blocklang.compiler.BlockCalculator;
 import org.flowutils.classbuilder.SourceLocation;
 
 /**
@@ -12,9 +12,18 @@ import org.flowutils.classbuilder.SourceLocation;
 public interface BlockBuilder {
 
     /**
-     * @return a new BlockCalculation instance based on the added source.
+     * This method is called by the BlockBase code, no need to call this in specific Block implementations.
+     *
+     * @param currentBlock the block that is currently being generated, or null if non-block specific code is being generated.
+     *                     Used for resolving shorthand references ("$paramName") to block parameters in added code.
      */
-    BlockCalculation createCalculation();
+    void setCurrentBlock(Block currentBlock);
+
+    /**
+     * @return a new BlockCalculator instance based on the added source.
+     *         The internal state of the BlockCalculator is not yet initialized, that should be done by the calling code.
+     */
+    BlockCalculator createCalculator();
 
     /**
      * Adds the specified line to the source at the specified location.
@@ -36,6 +45,14 @@ public interface BlockBuilder {
      * @return unique id in the code for the specified parameter (may differ for different BlockBuilders).
      */
     String getParamId(Param param);
+
+    /**
+     * Adds a field for the specified parameter.  Also stores the default value of the parameter, and uses it
+     * when initializing a new instance.
+     * @param parameter parameter to add.
+     * @return the unique id of the field with the parameter value.
+     */
+    String addParamField(Param parameter);
 
     /**
      * Creates a new unique field at the start of the class.

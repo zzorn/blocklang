@@ -25,6 +25,16 @@ public interface Param {
     Class getType();
 
     /**
+     * @return type of the parameter, converted to primitive type if it is a wrapped type (Double, Integer, etc).
+     */
+    Class getPrimitiveTypeIfPossible();
+
+    /**
+     * @return default value to use for the parameter when uninitialized.
+     */
+    Object getDefaultValue();
+
+    /**
      * @return current value of the parameter.
      */
     <T> T get();
