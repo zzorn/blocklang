@@ -1,7 +1,7 @@
 package org.blocklang.block;
 
 import org.blocklang.block.parameter.Param;
-import org.blocklang.compiler.BlockCalculator;
+import org.blocklang.compiler.ModuleCalculator;
 import org.flowutils.classbuilder.SourceLocation;
 
 /**
@@ -23,7 +23,7 @@ public interface BlockBuilder {
      * @return a new BlockCalculator instance based on the added source.
      *         The internal state of the BlockCalculator is not yet initialized, that should be done by the calling code.
      */
-    BlockCalculator createCalculator();
+    ModuleCalculator createCalculator();
 
     /**
      * Adds the specified line to the source at the specified location.
@@ -108,7 +108,7 @@ public interface BlockBuilder {
      * Creates an assignment statement from an expression to a parameter in the calculation code.
      *
      * @param paramToAssignTo the parameter that the value is assigned to.
-     * @param expression expression used to calculate the value.  A semicolon and newline are automatically added at the end.
+     * @param expression expression used to update the value.  A semicolon and newline are automatically added at the end.
      */
     void assign(Param paramToAssignTo, String expression);
 
@@ -116,7 +116,7 @@ public interface BlockBuilder {
      * Creates an assignment statement from an expression to a variable id in the calculation code.
      *
      * @param variableIdToAssignTo the unique id of a variable to assign the expression to (should be generated with addVar to avoid any accidental duplicates generated).
-     * @param expression expression used to calculate the value.  A semicolon and newline are automatically added at the end.
+     * @param expression expression used to update the value.  A semicolon and newline are automatically added at the end.
      */
     void assign(String variableIdToAssignTo, String expression);
 
@@ -134,7 +134,7 @@ public interface BlockBuilder {
      *
      * @param location location to place the assignment statement in.
      * @param paramToAssignTo the parameter that the value is assigned to.
-     * @param expression expression used to calculate the value.  A semicolon and newline are automatically added at the end.
+     * @param expression expression used to update the value.  A semicolon and newline are automatically added at the end.
      */
     void assign(SourceLocation location, Param paramToAssignTo, String expression);
 
@@ -143,7 +143,7 @@ public interface BlockBuilder {
      *
      * @param location location to place the assignment statement in.
      * @param variableIdToAssignTo the unique id of a variable to assign the expression to (should be generated with addVar to avoid any accidental duplicates generated).
-     * @param expression expression used to calculate the value.  A semicolon and newline are automatically added at the end.
+     * @param expression expression used to update the value.  A semicolon and newline are automatically added at the end.
      */
     void assign(SourceLocation location, String variableIdToAssignTo, String expression);
 

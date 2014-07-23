@@ -45,6 +45,19 @@
             <version>0.1.30</version>
         </dependency>
 
+        <!-- Fast primitive collections -->
+        <dependency>
+            <groupId>net.sf.trove4j</groupId>
+            <artifactId>trove4j</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>6.5.15</version>
+        </dependency>
+-->
         <!-- For language parsing -->
         <dependency>
             <groupId>org.parboiled</groupId>

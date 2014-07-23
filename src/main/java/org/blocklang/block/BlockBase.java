@@ -4,7 +4,7 @@ import org.blocklang.block.parameter.Input;
 import org.blocklang.block.parameter.Internal;
 import org.blocklang.block.parameter.Output;
 import org.blocklang.block.parameter.Param;
-import org.blocklang.compiler.BlockCalculator;
+import org.blocklang.compiler.ModuleCalculator;
 import org.blocklang.compiler.CalculationListener;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
@@ -30,10 +30,6 @@ public abstract class BlockBase implements Block {
     private Output defaultOutput;
     private final Set<BlockListener> listeners = new LinkedHashSet<BlockListener>(3);
 
-    private BlockCalculator blockCalculator;
-
-    private PropertiesDelegate<Input> inputPropertiesDelegate;
-    private PropertiesDelegate<Output> outputPropertiesDelegate;
 
     /**
      */
@@ -44,22 +40,6 @@ public abstract class BlockBase implements Block {
         getMutableOutputs();
     }
 
-    /**
-     * Generate code that reads input parameters, initializes internal parameters, generates any block-specific code,
-     * and then updates the output parameters (and internal parameters).
-     */
-    public void generateCalculatorCode(BlockBuilder blockBuilder) {
-
-        // TODO: Generate overall code skeleton (extract or get inputs, create fields for internal, create variables and
-        // return code for outputs), have a protected abstract method that derived classes need to implement which generates
-        // the actual calculation code.
-        // TODO: Add functions to Param or BlockBase for getting the generated code name of a given input/output.
-
-
-        // Create block-specific code
-        generateCode(blockBuilder);
-
-    }
 
     @Override public final void generateCode(BlockBuilder blockBuilder) {
 
@@ -77,29 +57,22 @@ public abstract class BlockBase implements Block {
             blockBuilder.addParamField(internal);
         }
 
-        // Add initialization of input values
-        for (Input input : inputs.values()) {
-            final String inputName = input.getName().toString();
-            final String inputField = input.getId(blockBuilder);
-            blockBuilder.addSourceLine(SourceLocation.BEFORE_CALCULATION,
-                                       "if (inputParameters.has(\"" + inputName +"\")) { " +
-                                       inputField + " = (" + input.getType().getCanonicalName() +") (inputParameters.get(\"" + inputName +"\").get()); " +
-                                       "}");
-        }
-
         // Create block-specific code
         doGenerateCode(blockBuilder);
-
-        // Add return of output values
-        for (Output output : outputs.values()) {
-            final String outputName = output.getName().toString();
-            final String outputField = output.getId(blockBuilder);
-            blockBuilder.addSourceLine(SourceLocation.AFTER_CALCULATION, "outputParameters.get(\""+ outputName +"\").set("+ outputField +");");
-        }
 
         // Clear current block
         blockBuilder.setCurrentBlock(null);
 
+    }
+
+    @Override public final void disconnect() {
+        for (Input input : inputs.values()) {
+            input.disconnect();
+        }
+
+        for (Output output : outputs.values()) {
+            output.disconnect();
+        }
     }
 
     /**
@@ -108,37 +81,7 @@ public abstract class BlockBase implements Block {
      */
     protected abstract void doGenerateCode(BlockBuilder blockBuilder);
 
-    protected final BlockCalculator compileCode() {
 
-        // Generate code
-        final BlockBuilder blockBuilder = new BlockBuilderImpl();
-        generateCalculatorCode(blockBuilder);
-
-        // Compile and create instance
-        return blockBuilder.createCalculator();
-    }
-
-    @Override public final void calculateOutputs() {
-        calculateOutputs(null);
-    }
-
-    @Override public final void calculateOutputs(ReadableProps externalContext) {
-        // Compile the calculation if not already compiled
-        if (blockCalculator == null) {
-            blockCalculator = compileCode();
-        }
-        if (blockCalculator == null) throw new IllegalStateException("BlockCalculator should have been created");
-
-        // Initialize the delegates if not already initialized.
-        if (inputPropertiesDelegate    == null) inputPropertiesDelegate    = new PropertiesDelegate<Input>(getMutableInputs());
-        if (outputPropertiesDelegate   == null) outputPropertiesDelegate   = new PropertiesDelegate<Output>(getMutableOutputs());
-
-        // Invoke calculation, delegating inputs, outputs, and internal state to parameters in this block.
-        blockCalculator.calculate(externalContext,
-                                   inputPropertiesDelegate,
-                                   outputPropertiesDelegate,
-                                   (CalculationListener) null);
-    }
 
     @Override public final Map<Symbol, Input> getInputs() {
         return Collections.unmodifiableMap(getMutableInputs());
@@ -155,26 +98,6 @@ public abstract class BlockBase implements Block {
     @Override public final Output getDefaultOutput() {
         if (outputs == null || outputs.isEmpty()) return null;
         else return defaultOutput;
-    }
-
-    @Override public final void resetInternalState() {
-        // TODO: If composite block, recursively call resetInternalState.  Also just reset internal state.
-
-        if (internals != null) {
-            for (Internal internal : internals.values()) {
-                internal.resetToDefault();
-            }
-        }
-    }
-
-    @Override public void getInternalState(WritableProps internalState) {
-        // TODO: Implement
-
-    }
-
-    @Override public void setInternalState(ReadableProps internalState) {
-        // TODO: Implement
-
     }
 
     @Override public final void addListener(BlockListener listener) {
@@ -380,17 +303,17 @@ public abstract class BlockBase implements Block {
 
     // TODO: Throw exception if the same identifier already exists as input, internal, or external.
 
-    private Input addInput(Input input) {
+    protected final Input addInput(Input input) {
         addParam(input, getMutableInputs(), "input");
         return input;
     }
 
-    private Internal addInternal(Internal internal) {
+    protected final Internal addInternal(Internal internal) {
         addParam(internal, getMutableInternals(), "internal");
         return internal;
     }
 
-    private Output addOutput(Output output) {
+    protected final Output addOutput(Output output) {
         addParam(output, getMutableOutputs(), "output");
 
         // Initialize defaultOutput if this is the first output
@@ -408,71 +331,20 @@ public abstract class BlockBase implements Block {
     }
 
 
-    private Map<Symbol, Input> getMutableInputs() {
+    protected Map<Symbol, Input> getMutableInputs() {
         if (inputs == null) inputs = new LinkedHashMap<Symbol, Input>();
         return inputs;
     }
 
-    private Map<Symbol, Internal> getMutableInternals() {
+    protected Map<Symbol, Internal> getMutableInternals() {
         if (internals == null) internals = new LinkedHashMap<Symbol, Internal>();
         return internals;
     }
 
-    private Map<Symbol, Output> getMutableOutputs() {
+    protected Map<Symbol, Output> getMutableOutputs() {
         if (outputs == null) outputs = new LinkedHashMap<Symbol, Output>();
         return outputs;
     }
-
-
-    /**
-     * Implements the Properties interface and delegates to the specified Parameter map.
-     * @param <P>
-     */
-    private static final class PropertiesDelegate<P extends Param> extends PropsBase {
-        private final Map<Symbol, P> params;
-
-        private PropertiesDelegate(Map<Symbol, P> params) {
-            this.params = params;
-        }
-
-        @Override public <T> T get(Symbol id) {
-            return (T) params.get(id);
-        }
-
-        @Override public boolean has(Symbol id) {
-            return params.containsKey(id);
-        }
-
-        @Override public Map<Symbol, Object> getAll(Map<Symbol, Object> out) {
-            if (out == null) out = new LinkedHashMap<Symbol, Object>();
-
-            for (Map.Entry<Symbol, P> entry : params.entrySet()) {
-                out.put(entry.getKey(), entry.getValue().get());
-            }
-
-            return out;
-        }
-
-        @Override public Set<Symbol> getIdentifiers(Set<Symbol> identifiersOut) {
-            return params.keySet();
-        }
-
-        @Override public Object set(Symbol id, Object value) {
-            final P param = params.get(id);
-            final Object oldValue = param.get();
-            param.set(value);
-            return oldValue;
-        }
-
-        @Override public <T> T remove(Symbol id) {
-            throw new UnsupportedOperationException("Can not remove any parameter!");
-        }
-
-        @Override public void removeAll() {
-            throw new UnsupportedOperationException("Can not remove any parameter!");
-        }
-    }
-
 
 
 }

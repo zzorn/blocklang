@@ -1,8 +1,9 @@
 package org.blocklang.block;
 
 import org.blocklang.block.parameter.Param;
-import org.blocklang.compiler.BlockCalculator;
+import org.blocklang.compiler.ModuleCalculator;
 import org.flowutils.Check;
+import org.flowutils.StringUtils;
 import org.flowutils.Symbol;
 import org.flowutils.classbuilder.ClassBuilder;
 import org.flowutils.classbuilder.ClassBuilderException;
@@ -25,7 +26,7 @@ import static org.flowutils.classbuilder.SourceLocation.METHODS;
 public final class BlockBuilderImpl implements BlockBuilder {
 
     private static final int PARAMETER_NAME_TRUNCATE_LENGTH = 20;
-    private final ClassBuilder<BlockCalculator> classBuilder;
+    private final ClassBuilder<ModuleCalculator> classBuilder;
     private final Map<Param, String> uniqueParamIds = new LinkedHashMap<Param, String>();
     private Block currentBlock;
 
@@ -35,8 +36,8 @@ public final class BlockBuilderImpl implements BlockBuilder {
     private final StringBuilder initializeDefaultsMethod = new StringBuilder();
 
     public BlockBuilderImpl() {
-        classBuilder = new JaninoClassBuilder<BlockCalculator>(BlockCalculator.class,
-                                                                "calculate",
+        classBuilder = new JaninoClassBuilder<ModuleCalculator>(ModuleCalculator.class,
+                                                                "update",
                                                                 "externalContext",
                                                                 "inputParameters",
                                                                 "outputParameters",
@@ -51,7 +52,7 @@ public final class BlockBuilderImpl implements BlockBuilder {
         this.currentBlock = currentBlock;
     }
 
-    @Override public BlockCalculator createCalculator() {
+    @Override public ModuleCalculator createCalculator() {
 
         // Finalize initialization method
         initializeDefaultsMethod.append("  }");
@@ -59,7 +60,7 @@ public final class BlockBuilderImpl implements BlockBuilder {
 
         try {
             // Compile a new instance
-            final BlockCalculator blockCalculator = classBuilder.createInstance();
+            final ModuleCalculator moduleCalculator = classBuilder.createInstance();
 
 
             // TODO: Remove: DEBUG: show code:
@@ -67,9 +68,13 @@ public final class BlockBuilderImpl implements BlockBuilder {
 
 
             // Initialize it
-            blockCalculator.initializeDefaults(parameterDefaultValues);
+            moduleCalculator.initializeDefaults(parameterDefaultValues);
+            System.out.println("BlockBuilderImpl.createCalculator initializing");
+            for (Map.Entry<String, Object> entry : parameterDefaultValues.entrySet()) {
+                System.out.println(entry.getKey() + " = " + entry.getValue());
+            }
 
-            return blockCalculator;
+            return moduleCalculator;
         } catch (ClassBuilderException e) {
             throw new IllegalStateException("Problem when creating a BlockCalculator: " + e.getMessage(), e);
         }
@@ -152,7 +157,15 @@ public final class BlockBuilderImpl implements BlockBuilder {
         addSourceLine(FIELDS, "private " + parameter.getPrimitiveTypeIfPossible().getCanonicalName() + " " + id + ";");
 
         // Add field initialization
-        initializeDefaultsMethod.append("    if (parameterDefaults.containsKey(\""+id+"\")) { " + id + " = ("+type.getCanonicalName()+") parameterDefaults.get(\""+id+"\"); }\n");
+        initializeDefaultsMethod.append("    if (parameterDefaults.containsKey(\"" +
+                                        id +
+                                        "\")) { " +
+                                        id +
+                                        " = (" +
+                                        type.getCanonicalName() +
+                                        ") parameterDefaults.get(\"" +
+                                        id +
+                                        "\"); }\n");
 
         // Store default value for initialization
         parameterDefaultValues.put(id, parameter.getDefaultValue());

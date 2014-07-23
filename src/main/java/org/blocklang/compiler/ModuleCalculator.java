@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Represents the functionality of a block or composite block.  Interface used by generated compiled code.
  */
-public interface BlockCalculator {
+public interface ModuleCalculator {
 
     /**
      * @param externalContext global context parameters for the calculation (e.g. current time).
@@ -19,12 +19,10 @@ public interface BlockCalculator {
      *                         May not be called at all if the calculation is short.
      *                         Pass in null if no progress listening is desired.
      */
-    // TODO: Pass in just maps instead
-    // TODO: Generate code for a module/composite block, allow it to interface with other blocks separately compiled
-    void calculate(ReadableProps externalContext,
-                   ReadableProps inputParameters,
-                   WritableProps outputParameters,
-                   CalculationListener calculationListener);
+    void update(ReadableProps externalContext,
+                ReadableProps inputParameters,
+                WritableProps outputParameters,
+                CalculationListener calculationListener);
 
     void initializeDefaults(Map<String, Object> parameterDefaults);
 
