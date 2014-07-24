@@ -33,14 +33,21 @@ public class ModuleImpl extends BlockBase implements Module {
 
 
     @Override public <T extends Block> T addBlock(T block) {
-        blocks.add(block);
+        if (!blocks.contains(block)) {
+            blocks.add(block);
+            block.setModule(this);
+            onStructureChanged();
+        }
+
         return block;
     }
 
     @Override public void removeBlock(Block block) {
         if (blocks.contains(block)) {
             blocks.remove(block);
+            block.setModule(null);
             block.disconnect();
+            onStructureChanged();
         }
     }
 
@@ -51,7 +58,7 @@ public class ModuleImpl extends BlockBase implements Module {
         if (hasModuleParamNamed(id)) throw new IllegalArgumentException("The module already contains a parameter with the name '"+name+"'");
 
         // Create module input
-        final ModuleInput moduleInput = new ModuleInput(id, type, defaultValue, description);
+        final ModuleInput moduleInput = new ModuleInput(this, id, type, defaultValue, description);
 
         // Store it
         moduleInputs.put(id, moduleInput);
@@ -67,7 +74,7 @@ public class ModuleImpl extends BlockBase implements Module {
         if (hasModuleParamNamed(id)) throw new IllegalArgumentException("The module already contains a parameter with the name '"+name+"'");
 
         // Create module output
-        final ModuleOutput moduleOutput = new ModuleOutput(id, type, defaultValue, description);
+        final ModuleOutput moduleOutput = new ModuleOutput(this, id, type, defaultValue, description);
 
         // Store it
         moduleOutputs.put(id, moduleOutput);
@@ -158,6 +165,10 @@ public class ModuleImpl extends BlockBase implements Module {
                                 outputPropertiesDelegate,
                                 calculationListener);
 
+    }
+
+    @Override public ModuleCalculator getModuleCalculator() {
+        return moduleCalculator;
     }
 
 
@@ -297,6 +308,11 @@ public class ModuleImpl extends BlockBase implements Module {
         return false;
     }
 
+    @Override public void onStructureChanged() {
+        super.onStructureChanged();
+
+        moduleCalculator = null;
+    }
 
 
 }

@@ -5,6 +5,7 @@ import org.blocklang.block.parameter.ModuleInput;
 import org.blocklang.block.parameter.ModuleOutput;
 import org.blocklang.block.parameter.Output;
 import org.blocklang.compiler.CalculationListener;
+import org.blocklang.compiler.ModuleCalculator;
 import org.flowutils.Symbol;
 import org.flowutils.collections.props.ReadableProps;
 
@@ -97,4 +98,14 @@ public interface Module extends Block {
      */
     void update(ReadableProps externalContext, CalculationListener calculationListener);
 
+    /**
+     * @return the module calculator for this module, if it has been created.
+     */
+    ModuleCalculator getModuleCalculator();
+
+
+    /**
+     * Should be called when parameters are connected or disconnected, or blocks added or removed, or the code produced by blocks changed.
+     */
+    void onStructureChanged();
 }

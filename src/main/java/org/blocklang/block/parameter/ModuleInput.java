@@ -1,5 +1,6 @@
 package org.blocklang.block.parameter;
 
+import org.blocklang.block.Block;
 import org.flowutils.Symbol;
 
 /**
@@ -9,18 +10,17 @@ public final class ModuleInput extends Input {
 
     private final Output output;
 
-    public ModuleInput(Symbol name, Class type) {
-        this(name, type, null);
-    }
+    /**
+     * @param host the block the parameter is located in.
+     * @param name   name for the parameter, should be unique within the block the parameter is in.
+     * @param type         type of the parameter.
+     * @param defaultValue initial and default value for the parameter.
+     * @param description  human readable description of the parameter.
+     */
+    public ModuleInput(Block host, Symbol name, Class type, Object defaultValue, String description) {
+        super(host, name, type, defaultValue, description);
 
-    public ModuleInput(Symbol name, Class type, Object defaultValue) {
-        this(name, type, defaultValue, null);
-    }
-
-    public ModuleInput(Symbol name, Class type, Object defaultValue, String description) {
-        super(name, type, defaultValue, description);
-
-        output = new Output(name, type, defaultValue, description);
+        output = new Output(host, name, type, defaultValue, description);
     }
 
     /**

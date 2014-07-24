@@ -30,6 +30,8 @@ public abstract class BlockBase implements Block {
     private Output defaultOutput;
     private final Set<BlockListener> listeners = new LinkedHashSet<BlockListener>(3);
 
+    private Module module;
+
 
     /**
      */
@@ -118,6 +120,27 @@ public abstract class BlockBase implements Block {
         return param;
     }
 
+    @Override public final Module getModule() {
+        return module;
+    }
+
+    @Override public final void setModule(Module module) {
+        if (module != this.module) {
+            // Remove from previous module
+            if (this.module != null) {
+                this.module.removeBlock(this);
+            }
+
+            // Update module
+            this.module = module;
+
+            // Add to new module
+            if (this.module != null) {
+                this.module.addBlock(module);
+            }
+        }
+    }
+
     /**
      * Calls all registered block listeners and notifies them that this block has changed.
      */
@@ -157,7 +180,7 @@ public abstract class BlockBase implements Block {
      * @return the created and registered input parameter.
      */
     protected final Input input(String name, double defaultValue, String description) {
-        return addInput(new Input(Symbol.get(name), Double.class, defaultValue, description));
+        return addInput(new Input(this, Symbol.get(name), Double.class, defaultValue, description));
     }
 
     /**
@@ -190,7 +213,7 @@ public abstract class BlockBase implements Block {
      * @return the created and registered input parameter.
      */
     protected final Input input(String name, Class type, Object defaultValue, String description) {
-        return addInput(new Input(Symbol.get(name), type, defaultValue, description));
+        return addInput(new Input(this, Symbol.get(name), type, defaultValue, description));
     }
 
     /**
@@ -223,7 +246,7 @@ public abstract class BlockBase implements Block {
      * @return the created and registered internal state parameter.
      */
     protected final Internal internal(String name, double defaultValue, String description) {
-        return addInternal(new Internal(Symbol.get(name), Double.class, defaultValue, description));
+        return addInternal(new Internal(this, Symbol.get(name), Double.class, defaultValue, description));
     }
 
     /**
@@ -256,7 +279,7 @@ public abstract class BlockBase implements Block {
      * @return the created and registered internal state parameter.
      */
     protected final Internal internal(String name, Class type, Object defaultValue, String description) {
-        return addInternal(new Internal(Symbol.get(name), type, defaultValue, description));
+        return addInternal(new Internal(this, Symbol.get(name), type, defaultValue, description));
     }
 
     /**
@@ -277,7 +300,7 @@ public abstract class BlockBase implements Block {
      * @return the created and registered output parameter.
      */
     protected final Output output(String name, String description) {
-        return addOutput(new Output(Symbol.get(name), Double.class, 0.0, description));
+        return addOutput(new Output(this, Symbol.get(name), Double.class, 0.0, description));
     }
 
     /**
@@ -298,7 +321,7 @@ public abstract class BlockBase implements Block {
      * @return the created and registered output parameter.
      */
     protected final Output output(String name, Class type, String description) {
-        return addOutput(new Output(Symbol.get(name), type, null, description));
+        return addOutput(new Output(this, Symbol.get(name), type, null, description));
     }
 
     // TODO: Throw exception if the same identifier already exists as input, internal, or external.
@@ -328,6 +351,13 @@ public abstract class BlockBase implements Block {
         if (params.containsKey(name)) throw new IllegalArgumentException("An "+paramCategoryName+" named " + name + " has already been added to this block!");
 
         params.put(name, param);
+
+        onStructureChanged();
+    }
+
+    @Override public void onStructureChanged() {
+        final Module module = getModule();
+        if (module != null) module.onStructureChanged();
     }
 
 

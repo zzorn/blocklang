@@ -1,14 +1,18 @@
 package org.blocklang.block.parameter;
 
+import org.blocklang.block.Block;
 import org.blocklang.block.BlockBuilder;
 import org.flowutils.Check;
 import org.flowutils.Symbol;
+
+import static org.flowutils.Check.notNull;
 
 /**
  * Common functionality for parameters.
  */
 public abstract class ParamBase implements Param {
 
+    private final Block host;
     private final Symbol name;
     private final String description;
     private final Class type;
@@ -18,32 +22,18 @@ public abstract class ParamBase implements Param {
 
 
     /**
-     * @param name name for the parameter, should be unique within the block the parameter is in.
-     * @param type type of the parameter.
-     */
-    public ParamBase(Symbol name, Class type) {
-        this(name, type, null, null);
-    }
-
-    /**
-     * @param name name for the parameter, should be unique within the block the parameter is in.
-     * @param type type of the parameter.
-     * @param defaultValue initial and default value for the parameter.
-     */
-    public ParamBase(Symbol name, Class type, Object defaultValue) {
-        this(name, type, defaultValue, null);
-    }
-
-    /**
+     * @param host the block that the parameter is located in.
      * @param name name for the parameter, should be unique within the block the parameter is in.
      * @param type type of the parameter.
      * @param defaultValue initial and default value for the parameter.
      * @param description human readable description of the parameter.
      */
-    public ParamBase(Symbol name, Class type, Object defaultValue, String description) {
-        Check.notNull(name, "name");
-        Check.notNull(type, "type");
+    public ParamBase(Block host, Symbol name, Class type, Object defaultValue, String description) {
+        notNull(host, "host");
+        notNull(name, "name");
+        notNull(type, "type");
 
+        this.host = host;
         this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
@@ -62,6 +52,10 @@ public abstract class ParamBase implements Param {
 
     public final Class getType() {
         return type;
+    }
+
+    @Override public final Block getHost() {
+        return host;
     }
 
     @Override public final Class getPrimitiveTypeIfPossible() {

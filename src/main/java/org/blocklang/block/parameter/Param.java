@@ -1,5 +1,6 @@
 package org.blocklang.block.parameter;
 
+import org.blocklang.block.Block;
 import org.blocklang.block.BlockBuilder;
 import org.flowutils.Symbol;
 
@@ -23,6 +24,11 @@ public interface Param {
      * @return type of the parameter.
      */
     Class getType();
+
+    /**
+     * @return the block that the parameter is located in.
+     */
+    Block getHost();
 
     /**
      * @return type of the parameter, converted to primitive type if it is a wrapped type (Double, Integer, etc).
